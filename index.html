@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --tg-bg: var(--tg-theme-bg-color, #ffffff);
+            --tg-text: var(--tg-theme-text-color, #222222);
+            --tg-hint: var(--tg-theme-hint-color, #888888);
+            --tg-button: var(--tg-theme-button-color, #3390ec);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-bg);
+            color: var(--tg-text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        .container { padding: 20px; }
+
+        .icon { font-size: 80px; margin-bottom: 20px; animation: pulse 2s infinite; }
+
+        h1 { font-size: 24px; margin-bottom: 10px; }
+
+        p { color: var(--tg-hint); font-size: 16px; line-height: 1.5; }
+
+        .progress-bar {
+            width: 200px; height: 6px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 10px; margin: 25px auto; overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 70%; height: 100%;
+            background: var(--tg-button);
+            border-radius: 10px;
+            animation: loading 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes loading {
+            0% { width: 10%; }
+            50% { width: 90%; }
+            100% { width: 10%; }
+        }
+
+        button {
+            background: var(--tg-button);
+            color: white; border: none;
+            padding: 12px 25px; border-radius: 10px;
+            font-weight: bold; font-size: 14px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="icon">🏗️</div>
+    <h1>Совсем скоро!</h1>
+    <p>Наше новое меню с онлайн-оплатой<br>находится в стадии разработки.</p>
+    
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+    
+    <p style="font-size: 13px;">Готовность: 85%</p>
+    <button onclick="tg.close()">Понятно</button>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand(); // Разворачиваем на весь экран
+</script>
+
+</body>
+</html>
