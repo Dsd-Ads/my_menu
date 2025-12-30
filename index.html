@@ -279,30 +279,37 @@
     }
 
     tg.onEvent('mainButtonClicked', () => {
-        let calculatedTotal = 0;
-        const order = Object.entries(cart).map(([id, count]) => {
-            const item = menuItems.find(i => i.id === id);
-            if (item) {
-                calculatedTotal += item.price * count;
-                return { 
-                    title: item.title, 
-                    count: count, 
-                    price: item.price 
-                };
+        let finalTotal = 0;
+        const order = [];
+
+        // Пересобираем заказ и считаем итоговую сумму прямо перед отправкой
+        for (const id in cart) {
+            const count = cart[id];
+            const item = menuItems.find(i => String(i.id) === String(id));
+            
+            if (item && count > 0) {
+                const itemTotal = item.price * count;
+                finalTotal += itemTotal; // Суммируем
+                
+                order.push({
+                    title: item.title,
+                    count: count,
+                    price: item.price
+                });
             }
-        });
+        }
 
-        // Отправляем JSON со всеми нужными полями для бота
-        tg.sendData(JSON.stringify({ 
-            order: order, 
-            totalPrice: calculatedTotal,
-            time: document.getElementById('order-time').value 
-        }));
+        // Формируем объект данных. 
+        // ВАЖНО: имена полейTotalPrice должны совпадать с тем, что ищет Python!
+        const payload = {
+            order: order,
+            totalPrice: finalTotal,
+            time: document.getElementById('order-time').value
+        };
+
+        console.log("Отправка данных:", payload); // Для отладки
+        tg.sendData(JSON.stringify(payload));
     });
-
-    render();
-    const firstTab = document.querySelector('.nav-btn');
-    if (firstTab) firstTab.classList.add('active');
 </script>
 </body>
 </html>
