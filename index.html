@@ -155,7 +155,7 @@
     tg.ready();
     tg.expand();
     
-    // Устанавливаем цвет кнопки из темы Telegram
+    // Начальные настройки главной кнопки
     tg.MainButton.setParams({
         color: tg.themeParams.button_color || '#248bed',
         text_color: tg.themeParams.button_text_color || '#ffffff'
@@ -195,13 +195,9 @@
         const list = document.getElementById('menu-list');
         
         Object.entries(categories).forEach(([catId, catName]) => {
-            // Рендер табов
             nav.innerHTML += `<a href="#cat-${catId}" class="nav-btn" onclick="highlightNav(this)">${catName}</a>`;
-            
-            // Рендер заголовка категории
             list.innerHTML += `<div id="cat-${catId}" class="section-anchor"><div class="category-header">${catName}</div></div>`;
             
-            // Рендер карточек товаров
             menuItems.filter(i => i.category === catId).forEach(item => {
                 list.innerHTML += `
                     <div class="item-card">
@@ -249,7 +245,8 @@
         }
         
         tg.HapticFeedback.selectionChanged();
-        updateMainBtn(); // Пересчитываем сумму сразу после изменения
+        // Принудительно вызываем обновление кнопки
+        updateMainBtn(); 
     }
 
     function updateMainBtn() {
@@ -266,14 +263,17 @@
         }
 
         if (hasItems && total > 0) {
-            tg.MainButton.setText(`ПОДТВЕРДИТЬ ЗАКАЗ — ${total} ₽`);
-            if (!tg.MainButton.isVisible) tg.MainButton.show();
+            // Мгновенное обновление через setParams
+            tg.MainButton.setParams({
+                text: `ПОДТВЕРДИТЬ ЗАКАЗ — ${total} ₽`,
+                is_visible: true,
+                is_active: true
+            });
         } else {
             tg.MainButton.hide();
         }
     }
 
-    // Событие нажатия на главную кнопку
     tg.onEvent('mainButtonClicked', () => {
         let finalTotal = 0;
         const order = [];
@@ -283,8 +283,7 @@
             const item = menuItems.find(i => String(i.id) === String(id));
             
             if (item && count > 0) {
-                const sum = item.price * count;
-                finalTotal += sum;
+                finalTotal += item.price * count;
                 order.push({
                     title: item.title,
                     count: count,
@@ -293,19 +292,16 @@
             }
         }
 
-        const data = {
+        tg.sendData(JSON.stringify({
             order: order,
             totalPrice: finalTotal,
             time: document.getElementById('order-time').value
-        };
-
-        tg.sendData(JSON.stringify(data));
+        }));
     });
 
-    // Запуск приложения
     render();
     
-    // Активируем первый таб при загрузке
+    // Активация первой вкладки
     const firstTab = document.querySelector('.nav-btn');
     if (firstTab) firstTab.classList.add('active');
 
