@@ -115,6 +115,7 @@
             color: var(--link-color); border: none;
             padding: 5px 15px; border-radius: 14px;
             font-weight: 600; font-size: 14px;
+            cursor: pointer;
         }
 
         .counter {
@@ -125,6 +126,7 @@
         .counter button {
             background: none; border: none; color: var(--button-text);
             font-size: 18px; font-weight: bold; width: 30px; height: 24px;
+            cursor: pointer;
         }
         .count-num { width: 20px; text-align: center; font-weight: 600; }
 
@@ -152,7 +154,12 @@
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
-    tg.MainButton.setParams({ color: tg.themeParams.button_color });
+    
+    // Устанавливаем цвет кнопки из темы Telegram
+    tg.MainButton.setParams({
+        color: tg.themeParams.button_color || '#248bed',
+        text_color: tg.themeParams.button_text_color || '#ffffff'
+    });
 
     const categories = {
         'mangal': '🔥 Мангал',
@@ -187,12 +194,15 @@
         const nav = document.getElementById('nav-tabs');
         const list = document.getElementById('menu-list');
         
-        Object.entries(categories).forEach(([id, name]) => {
-            nav.innerHTML += `<a href="#cat-${id}" class="nav-btn" onclick="highlightNav(this)">${name}</a>`;
-            const items = menuItems.filter(i => i.category === id);
-            list.innerHTML += `<div id="cat-${id}" class="section-anchor"><div class="category-header">${name}</div></div>`;
+        Object.entries(categories).forEach(([catId, catName]) => {
+            // Рендер табов
+            nav.innerHTML += `<a href="#cat-${catId}" class="nav-btn" onclick="highlightNav(this)">${catName}</a>`;
             
-            items.forEach(item => {
+            // Рендер заголовка категории
+            list.innerHTML += `<div id="cat-${catId}" class="section-anchor"><div class="category-header">${catName}</div></div>`;
+            
+            // Рендер карточек товаров
+            menuItems.filter(i => i.category === catId).forEach(item => {
                 list.innerHTML += `
                     <div class="item-card">
                         <div class="item-img" style="background-image: url('https://via.placeholder.com/100?text=Food')"></div>
@@ -220,7 +230,6 @@
         tg.HapticFeedback.impactOccurred('light');
     }
 
-    // ОБНОВЛЕННАЯ ФУНКЦИЯ КОРЗИНЫ
     function updateCart(id, delta) {
         const itemId = String(id);
         cart[itemId] = (cart[itemId] || 0) + delta;
@@ -230,37 +239,41 @@
         const num = document.getElementById(`num-${itemId}`);
 
         if (cart[itemId] > 0) {
-            addBtn.style.display = 'none';
-            counter.style.display = 'flex';
-            num.innerText = cart[itemId];
+            if (addBtn) addBtn.style.display = 'none';
+            if (counter) counter.style.display = 'flex';
+            if (num) num.innerText = cart[itemId];
         } else {
             delete cart[itemId];
-            addBtn.style.display = 'block';
-            counter.style.display = 'none';
+            if (addBtn) addBtn.style.display = 'block';
+            if (counter) counter.style.display = 'none';
         }
         
         tg.HapticFeedback.selectionChanged();
-        updateMainBtn(); // Сразу вызываем обновление кнопки
+        updateMainBtn(); // Пересчитываем сумму сразу после изменения
     }
 
-    // ОБНОВЛЕННАЯ ФУНКЦИЯ КНОПКИ
     function updateMainBtn() {
-        let currentTotal = 0;
+        let total = 0;
+        let hasItems = false;
+
         for (const id in cart) {
+            const count = cart[id];
             const item = menuItems.find(i => String(i.id) === String(id));
-            if (item) {
-                currentTotal += item.price * cart[id];
+            if (item && count > 0) {
+                total += item.price * count;
+                hasItems = true;
             }
         }
 
-        if (currentTotal > 0) {
-            tg.MainButton.setText(`ПОДТВЕРДИТЬ ЗАКАЗ — ${currentTotal} ₽`);
-            tg.MainButton.show();
+        if (hasItems && total > 0) {
+            tg.MainButton.setText(`ПОДТВЕРДИТЬ ЗАКАЗ — ${total} ₽`);
+            if (!tg.MainButton.isVisible) tg.MainButton.show();
         } else {
             tg.MainButton.hide();
         }
     }
 
+    // Событие нажатия на главную кнопку
     tg.onEvent('mainButtonClicked', () => {
         let finalTotal = 0;
         const order = [];
@@ -270,7 +283,8 @@
             const item = menuItems.find(i => String(i.id) === String(id));
             
             if (item && count > 0) {
-                finalTotal += item.price * count;
+                const sum = item.price * count;
+                finalTotal += sum;
                 order.push({
                     title: item.title,
                     count: count,
@@ -279,16 +293,22 @@
             }
         }
 
-        tg.sendData(JSON.stringify({
+        const data = {
             order: order,
             totalPrice: finalTotal,
             time: document.getElementById('order-time').value
-        }));
+        };
+
+        tg.sendData(JSON.stringify(data));
     });
 
+    // Запуск приложения
     render();
+    
+    // Активируем первый таб при загрузке
     const firstTab = document.querySelector('.nav-btn');
     if (firstTab) firstTab.classList.add('active');
+
 </script>
 </body>
 </html>
