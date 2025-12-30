@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Крафт Хаб Меню</title>
+    <title>Крафт Хаб — Меню и Предзаказ</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -19,18 +19,42 @@
             background-color: var(--secondary-bg);
             color: var(--text-color);
             margin: 0; padding: 0;
-            user-select: none;
         }
 
         header {
             background: var(--bg-color);
             padding: 15px;
             text-align: center;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
+            border-bottom: 1px solid rgba(0,0,0,0.08);
             position: sticky; top: 0; z-index: 10;
         }
 
-        .menu-container { padding: 10px; padding-bottom: 80px; }
+        .order-options {
+            background: var(--bg-color);
+            margin: 10px;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .order-options label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .order-options select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.1);
+            background: var(--secondary-bg);
+            color: var(--text-color);
+            font-size: 16px;
+        }
+
+        .menu-container { padding: 10px; padding-bottom: 100px; }
 
         .item-card {
             background: var(--bg-color);
@@ -39,62 +63,56 @@
             padding: 12px;
             margin-bottom: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.03);
-            transition: transform 0.1s;
         }
 
-        .item-card:active { transform: scale(0.98); }
-
         .item-img {
-            width: 100px; height: 100px;
+            width: 90px; height: 90px;
             border-radius: 12px;
-            object-fit: cover;
-            margin-right: 12px;
             background: #eee;
+            margin-right: 12px;
+            background-size: cover;
+            background-position: center;
         }
 
         .item-info { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-
-        .item-title { font-weight: 700; font-size: 17px; margin-bottom: 4px; }
-
-        .item-desc {
-            font-size: 13px;
-            color: var(--hint-color);
-            line-height: 1.3;
-            margin-bottom: 8px;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .item-footer { display: flex; justify-content: space-between; align-items: center; }
-
-        .item-price { font-weight: 800; font-size: 16px; color: var(--button-color); }
+        .item-title { font-weight: 700; font-size: 16px; }
+        .item-desc { font-size: 12px; color: var(--hint-color); margin: 4px 0; line-height: 1.2; }
+        .item-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+        .item-price { font-weight: 800; color: var(--button-color); }
 
         .add-btn {
             background: var(--button-color);
             color: #fff;
             border: none;
-            padding: 6px 16px;
-            border-radius: 20px;
+            padding: 6px 12px;
+            border-radius: 15px;
             font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
+            font-size: 13px;
         }
 
-        .counter { display: none; align-items: center; gap: 12px; font-weight: bold; }
-        .counter-btn { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--button-color); 
-                       background: none; color: var(--button-color); font-size: 18px; line-height: 1; }
+        .counter { display: none; align-items: center; gap: 10px; }
+        .counter-btn { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--button-color); background: none; color: var(--button-color); font-weight: bold; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="font-weight: 800; font-size: 20px;">Крафт Хаб 🍺</div>
+    <div style="font-weight: bold; font-size: 18px;">Крафт Хаб 🍺</div>
 </header>
 
-<div class="menu-container" id="menu">
-    </div>
+<div class="order-options">
+    <label>🕒 Когда подать блюда?</label>
+    <select id="order-time">
+        <option value="🍽 К забронированному столику">К моему бронированию</option>
+        <option value="🚀 Как можно скорее">Как можно скорее</option>
+        <option value="18:00">18:00</option>
+        <option value="19:00">19:00</option>
+        <option value="20:00">20:00</option>
+        <option value="21:00">21:00</option>
+    </select>
+</div>
+
+<div class="menu-container" id="menu-list"></div>
 
 <script>
     const tg = window.Telegram.WebApp;
@@ -102,32 +120,30 @@
     tg.expand();
 
     const menuItems = [
-        { id: 'set_2', title: 'Сет 2', price: 790, desc: 'Креветочные чипсы, сырные шарики, луковые кольца, кольца кальмара, соус тар-тар' },
-        { id: 'set_3', title: 'Сет 3', price: 1150, desc: 'Ребра свинина, 4 вида колбасок, гренки, соус барбекю' },
-        { id: 'set_1', title: 'Сет 1', price: 1550, desc: 'Сырные нити, суджук, мясные чипсы свинина и курица, гренки, куриные крылышки' },
-        { id: 'barabulka', title: 'Барабулька', price: 490, desc: 'Жареная барабулька (порция)' },
-        { id: 'set_4', title: 'Сет 4', price: 850, desc: 'Сырные нити, картофельные чипсы, суджук, арахис, фисташки' }
+        { id: 'set_1', title: 'Сет 1', price: 1550, desc: 'Сырные нити, суджук, мясные чипсы, гренки, крылышки' },
+        { id: 'set_2', title: 'Сет 2', price: 790, desc: 'Креветочные чипсы, сырные шарики, луковые кольца, кальмар, тар-тар' },
+        { id: 'set_3', title: 'Сет 3', price: 1150, desc: 'Ребра свинина, 4 вида колбасок, гренки, барбекю' },
+        { id: 'set_4', title: 'Сет 4', price: 850, desc: 'Сырные нити, чипсы, суджук, арахис, фисташки' },
+        { id: 'barabulka', title: 'Барабулька', price: 490, desc: 'Жареная барабулька (порция)' }
     ];
 
     let cart = {};
 
-    function renderMenu() {
-        const container = document.getElementById('menu');
-        container.innerHTML = menuItems.map(item => `
+    function render() {
+        const list = document.getElementById('menu-list');
+        list.innerHTML = menuItems.map(item => `
             <div class="item-card">
-                <div class="item-img" style="background-image: url('https://via.placeholder.com/100?text=Food'); background-size: cover;"></div>
+                <div class="item-img" style="background-image: url('https://via.placeholder.com/100?text=Food')"></div>
                 <div class="item-info">
-                    <div>
-                        <div class="item-title">${item.title}</div>
-                        <div class="item-desc">${item.desc}</div>
-                    </div>
+                    <div class="item-title">${item.title}</div>
+                    <div class="item-desc">${item.desc}</div>
                     <div class="item-footer">
                         <div class="item-price">${item.price} ₽</div>
-                        <button class="add-btn" id="btn-${item.id}" onclick="addToCart('${item.id}')">В корзину</button>
-                        <div class="counter" id="count-${item.id}">
-                            <button class="counter-btn" onclick="updateCount('${item.id}', -1)">−</button>
+                        <button class="add-btn" id="btn-${item.id}" onclick="change('${item.id}', 1)">Добавить</button>
+                        <div class="counter" id="cnt-${item.id}">
+                            <button class="counter-btn" onclick="change('${item.id}', -1)">-</button>
                             <span id="num-${item.id}">0</span>
-                            <button class="counter-btn" onclick="updateCount('${item.id}', 1)">+</button>
+                            <button class="counter-btn" onclick="change('${item.id}', 1)">+</button>
                         </div>
                     </div>
                 </div>
@@ -135,37 +151,28 @@
         `).join('');
     }
 
-    function addToCart(id) {
-        cart[id] = 1;
-        document.getElementById('btn-' + id).style.display = 'none';
-        document.getElementById('count-' + id).style.display = 'flex';
-        document.getElementById('num-' + id).innerText = '1';
-        updateMainButton();
-    }
-
-    function updateCount(id, delta) {
+    function change(id, delta) {
         cart[id] = (cart[id] || 0) + delta;
         if (cart[id] <= 0) {
             delete cart[id];
-            document.getElementById('btn-' + id).style.display = 'block';
-            document.getElementById('count-' + id).style.display = 'none';
+            document.getElementById('btn-'+id).style.display = 'block';
+            document.getElementById('cnt-'+id).style.display = 'none';
         } else {
-            document.getElementById('num-' + id).innerText = cart[id];
+            document.getElementById('btn-'+id).style.display = 'none';
+            document.getElementById('cnt-'+id).style.display = 'flex';
+            document.getElementById('num-'+id).innerText = cart[id];
         }
         updateMainButton();
     }
 
     function updateMainButton() {
         let total = 0;
-        let count = 0;
         for (const id in cart) {
             const item = menuItems.find(i => i.id === id);
             total += item.price * cart[id];
-            count += cart[id];
         }
-
-        if (count > 0) {
-            tg.MainButton.text = `Заказать (${total} ₽)`;
+        if (total > 0) {
+            tg.MainButton.text = `ЗАКАЗАТЬ (${total} ₽)`;
             tg.MainButton.show();
         } else {
             tg.MainButton.hide();
@@ -173,15 +180,22 @@
     }
 
     tg.onEvent('mainButtonClicked', function() {
-        const orderData = {
-            cart: cart,
-            totalPrice: document.querySelector('.item-price').innerText // Упрощенно
+        let order = [];
+        let total = 0;
+        for (const id in cart) {
+            const item = menuItems.find(i => i.id === id);
+            order.push({ title: item.title, count: cart[id], price: item.price * cart[id] });
+            total += item.price * cart[id];
+        }
+        const data = {
+            order: order,
+            totalPrice: total,
+            time: document.getElementById('order-time').value
         };
-        tg.sendData(JSON.stringify(cart)); // Отправляем только ID и кол-во в бот
+        tg.sendData(JSON.stringify(data));
     });
 
-    renderMenu();
+    render();
 </script>
-
 </body>
 </html>
