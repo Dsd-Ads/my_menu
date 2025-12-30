@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Крафт Хаб — Меню и Предзаказ</title>
+    <title>Крафт Хаб — Меню</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -19,23 +19,59 @@
             background-color: var(--secondary-bg);
             color: var(--text-color);
             margin: 0; padding: 0;
+            scroll-behavior: smooth; /* Плавная прокрутка */
         }
 
         header {
             background: var(--bg-color);
-            padding: 15px;
+            padding: 15px 15px 5px;
             text-align: center;
-            border-bottom: 1px solid rgba(0,0,0,0.08);
-            position: sticky; top: 0; z-index: 10;
+            position: sticky; top: 0; z-index: 20;
+        }
+
+        /* ПАНЕЛЬ КАТЕГОРИЙ (БЫСТРАЯ НАВИГАЦИЯ) */
+        .category-nav {
+            display: flex;
+            overflow-x: auto;
+            background: var(--bg-color);
+            padding: 10px;
+            gap: 8px;
+            position: sticky;
+            top: 48px; /* Сразу под хедером */
+            z-index: 19;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .category-nav::-webkit-scrollbar { display: none; } /* Скрываем полосу прокрутки */
+
+        .nav-item {
+            white-space: nowrap;
+            padding: 8px 16px;
+            background: var(--secondary-bg);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .nav-item.active {
+            background: var(--button-color);
+            color: #fff;
+        }
+
+        .category-section {
+            padding-top: 10px; /* Чтобы заголовок не заезжал под навигацию */
         }
 
         .category-title {
             padding: 20px 15px 10px;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 800;
             color: var(--button-color);
             text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
         .order-options {
@@ -43,27 +79,9 @@
             margin: 10px;
             padding: 15px;
             border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        .order-options label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .order-options select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid rgba(0,0,0,0.1);
-            background: var(--secondary-bg);
-            color: var(--text-color);
-            font-size: 16px;
-        }
-
-        .menu-container { padding: 10px; padding-bottom: 100px; }
+        .menu-container { padding: 0 10px 10px; }
 
         .item-card {
             background: var(--bg-color);
@@ -75,7 +93,7 @@
         }
 
         .item-img {
-            width: 90px; height: 90px;
+            width: 80px; height: 80px;
             border-radius: 12px;
             background: #eee;
             margin-right: 12px;
@@ -85,24 +103,22 @@
         }
 
         .item-info { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .item-title { font-weight: 700; font-size: 16px; }
-        .item-desc { font-size: 12px; color: var(--hint-color); margin: 4px 0; line-height: 1.2; }
-        .item-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+        .item-title { font-weight: 700; font-size: 15px; }
+        .item-desc { font-size: 12px; color: var(--hint-color); margin: 4px 0; }
+        .item-footer { display: flex; justify-content: space-between; align-items: center; }
         .item-price { font-weight: 800; color: var(--button-color); }
 
         .add-btn {
             background: var(--button-color);
             color: #fff;
             border: none;
-            padding: 6px 16px;
+            padding: 6px 14px;
             border-radius: 15px;
             font-weight: 600;
-            font-size: 13px;
         }
 
         .counter { display: none; align-items: center; gap: 10px; }
-        .counter-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--button-color); background: none; color: var(--button-color); font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: center; padding: 0; }
-        .num-display { font-weight: bold; min-width: 20px; text-align: center; }
+        .counter-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--button-color); background: none; color: var(--button-color); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -111,98 +127,101 @@
     <div style="font-weight: bold; font-size: 18px;">Крафт Хаб 🍺</div>
 </header>
 
+<div class="category-nav" id="cat-nav"></div>
+
 <div class="order-options">
-    <label>🕒 Когда подать блюда?</label>
-    <select id="order-time">
+    <label style="font-size: 12px; font-weight: bold;">🕒 ПОДАЧА:</label>
+    <select id="order-time" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd; margin-top: 5px;">
         <option value="🍽 К забронированному столику">К моему бронированию</option>
         <option value="🚀 Как можно скорее">Как можно скорее</option>
     </select>
 </div>
 
-<div id="menu-content">
-    </div>
+<div id="menu-content"></div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
 
-    // Категории для отображения
     const categories = {
-        'sets': '🔥 Популярные сеты',
-        'snacks': '🍺 Закуски к крафту'
+        'sets': 'Сеты',
+        'snacks': 'Закуски'
     };
 
-    // Данные меню
-    // Вставьте свои ссылки в поле 'img' и ID из iiko в 'iiko_id'
     const menuItems = [
         { id: 'set1', iiko_id: '', img: '', title: 'Сет 1', price: 1550, category: 'sets', desc: 'Сырные нити, суджук, мясные чипсы, гренки, крылья' },
-        { id: 'set2', iiko_id: '', img: '', title: 'Сет 2', price: 790, category: 'sets', desc: 'Креветочные чипсы, сырные шарики, луковые кольца, кальмар, тар-тар' },
-        { id: 'set3', iiko_id: '', img: '', title: 'Сет 3', price: 1150, category: 'sets', desc: 'Ребра свинина, 4 вида колбасок, гренки, соус BBQ' },
-        { id: 'set4', iiko_id: '', img: '', title: 'Сет 4', price: 850, category: 'sets', desc: 'Сырные нити, чипсы, суджук, арахис, фисташки' },
-        { id: 'chips', iiko_id: '', img: '', title: 'Чипсы (30г)', price: 130, category: 'snacks', desc: '' },
-        { id: 'shrimp_chips', iiko_id: '', img: '', title: 'Креветочные чипсы (20г)', price: 120, category: 'snacks', desc: '' },
-        { id: 'croutons', iiko_id: '', img: '', title: 'Гренки (100/30г)', price: 180, category: 'snacks', desc: '' },
-        { id: 'cheese_threads', iiko_id: '', img: '', title: 'Сырные нити (50г)', price: 180, category: 'snacks', desc: '' },
-        { id: 'cheese_balls', iiko_id: '', img: '', title: 'Сырные шарики (6 шт)', price: 230, category: 'snacks', desc: '' },
-        { id: 'meat_chips_pork', iiko_id: '', img: '', title: 'Мясные чипсы свинина (50г)', price: 260, category: 'snacks', desc: '' },
-        { id: 'meat_chips_chicken', iiko_id: '', img: '', title: 'Мясные чипсы курица (50г)', price: 260, category: 'snacks', desc: '' },
-        { id: 'sudzhuk', iiko_id: '', img: '', title: 'Суджук (50г)', price: 360, category: 'snacks', desc: '' },
-        { id: 'peanuts', iiko_id: '', img: '', title: 'Арахис (100г)', price: 390, category: 'snacks', desc: '' },
-        { id: 'pistachios', iiko_id: '', img: '', title: 'Фисташки (100г)', price: 390, category: 'snacks', desc: '' },
-        { id: 'wings', iiko_id: '', img: '', title: 'Куриные крылья (200г)', price: 420, category: 'snacks', desc: '' },
-        { id: 'ribs', iiko_id: '', img: '', title: 'Рёбрышки (200г)', price: 560, category: 'snacks', desc: '' },
-        { id: 'sausages', iiko_id: '', img: '', title: 'Колбаски (230/30г)', price: 570, category: 'snacks', desc: '' },
-        { id: 'onion_rings_6', iiko_id: '', img: '', title: 'Луковые кольца (6 шт)', price: 210, category: 'snacks', desc: '' },
-        { id: 'onion_rings_10', iiko_id: '', img: '', title: 'Луковые кольца (10 шт)', price: 310, category: 'snacks', desc: '' },
-        { id: 'squid_rings_6', iiko_id: '', img: '', title: 'Кольца кальмара (6 шт)', price: 360, category: 'snacks', desc: '' },
-        { id: 'squid_rings_10', iiko_id: '', img: '', title: 'Кольца кальмара (10 шт)', price: 540, category: 'snacks', desc: '' },
-        { id: 'shrimp_snack', iiko_id: '', img: '', title: 'Креветки (150г)', price: 560, category: 'snacks', desc: '' }
+        { id: 'set2', iiko_id: '', img: '', title: 'Сет 2', price: 790, category: 'sets', desc: 'Креветочные чипсы, шарики, кольца, тар-тар' },
+        { id: 'set3', iiko_id: '', img: '', title: 'Сет 3', price: 1150, category: 'sets', desc: 'Ребра, 4 вида колбасок, гренки, соус BBQ' },
+        { id: 'set4', iiko_id: '', img: '', title: 'Сет 4', price: 850, category: 'sets', desc: 'Нити, чипсы, суджук, арахис, фисташки' },
+        { id: 'chips', iiko_id: '', img: '', title: 'Чипсы (30г)', price: 130, category: 'snacks' },
+        { id: 'shrimp_chips', iiko_id: '', img: '', title: 'Креветочные чипсы', price: 120, category: 'snacks' },
+        { id: 'croutons', iiko_id: '', img: '', title: 'Гренки', price: 180, category: 'snacks' },
+        { id: 'cheese_threads', iiko_id: '', img: '', title: 'Сырные нити', price: 180, category: 'snacks' },
+        { id: 'cheese_balls', iiko_id: '', img: '', title: 'Сырные шарики', price: 230, category: 'snacks' },
+        { id: 'meat_chips_pork', iiko_id: '', img: '', title: 'Мясные чипсы (св)', price: 260, category: 'snacks' },
+        { id: 'meat_chips_chicken', iiko_id: '', img: '', title: 'Мясные чипсы (кур)', price: 260, category: 'snacks' },
+        { id: 'sudzhuk', iiko_id: '', img: '', title: 'Суджук', price: 360, category: 'snacks' },
+        { id: 'peanuts', iiko_id: '', img: '', title: 'Арахис', price: 390, category: 'snacks' },
+        { id: 'pistachios', iiko_id: '', img: '', title: 'Фисташки', price: 390, category: 'snacks' },
+        { id: 'wings', iiko_id: '', img: '', title: 'Крылья', price: 420, category: 'snacks' },
+        { id: 'ribs', iiko_id: '', img: '', title: 'Рёбрышки', price: 560, category: 'snacks' },
+        { id: 'sausages', iiko_id: '', img: '', title: 'Колбаски', price: 570, category: 'snacks' },
+        { id: 'onion_rings_6', iiko_id: '', img: '', title: 'Луковые кольца (6)', price: 210, category: 'snacks' },
+        { id: 'onion_rings_10', iiko_id: '', img: '', title: 'Луковые кольца (10)', price: 310, category: 'snacks' },
+        { id: 'squid_rings_6', iiko_id: '', img: '', title: 'Кольца кальмара (6)', price: 360, category: 'snacks' },
+        { id: 'squid_rings_10', iiko_id: '', img: '', title: 'Кольца кальмара (10)', price: 540, category: 'snacks' },
+        { id: 'shrimp_snack', iiko_id: '', img: 'https://via.placeholder.com/100', title: 'Креветки', price: 560, category: 'snacks' }
     ];
 
     let cart = {};
 
-    function render() {
+    function init() {
+        const nav = document.getElementById('cat-nav');
         const content = document.getElementById('menu-content');
-        content.innerHTML = '';
-
-        for (const [catId, catName] of Object.entries(categories)) {
-            const items = menuItems.filter(i => i.category === catId);
-            if (items.length === 0) continue;
-
-            content.innerHTML += `<div class="category-title">${catName}</div><div class="menu-container">`;
+        
+        for (const [id, name] of Object.entries(categories)) {
+            // Создаем кнопку навигации
+            nav.innerHTML += `<a href="#cat-${id}" class="nav-item" onclick="setActive(this)">${name}</a>`;
             
-            items.forEach(item => {
-                const imgUrl = item.img || 'https://via.placeholder.com/100?text=Food';
-                content.innerHTML += `
-                    <div class="item-card">
-                        <div class="item-img" style="background-image: url('${imgUrl}')"></div>
-                        <div class="item-info">
-                            <div class="item-title">${item.title}</div>
-                            <div class="item-desc">${item.desc || ''}</div>
-                            <div class="item-footer">
-                                <div class="item-price">${item.price} ₽</div>
-                                <button class="add-btn" id="btn-${item.id}" onclick="change('${item.id}', 1)">Добавить</button>
-                                <div class="counter" id="cnt-${item.id}">
-                                    <button class="counter-btn" onclick="change('${item.id}', -1)">-</button>
-                                    <span class="num-display" id="num-${item.id}">0</span>
-                                    <button class="counter-btn" onclick="change('${item.id}', 1)">+</button>
-                                </div>
+            // Создаем секцию меню
+            const items = menuItems.filter(i => i.category === id);
+            let itemsHtml = items.map(item => `
+                <div class="item-card">
+                    <div class="item-img" style="background-image: url('${item.img || 'https://via.placeholder.com/100'}')"></div>
+                    <div class="item-info">
+                        <div class="item-title">${item.title}</div>
+                        <div class="item-desc">${item.desc || ''}</div>
+                        <div class="item-footer">
+                            <div class="item-price">${item.price} ₽</div>
+                            <button class="add-btn" id="btn-${item.id}" onclick="change('${item.id}', 1)">Добавить</button>
+                            <div class="counter" id="cnt-${item.id}">
+                                <button class="counter-btn" onclick="change('${item.id}', -1)">-</button>
+                                <span id="num-${item.id}">0</span>
+                                <button class="counter-btn" onclick="change('${item.id}', 1)">+</button>
                             </div>
                         </div>
                     </div>
-                `;
-            });
-            content.innerHTML += `</div>`;
+                </div>
+            `).join('');
+
+            content.innerHTML += `
+                <div id="cat-${id}" class="category-section">
+                    <div class="category-title">${name}</div>
+                    <div class="menu-container">${itemsHtml}</div>
+                </div>`;
         }
+    }
+
+    function setActive(el) {
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
     }
 
     function change(id, delta) {
         cart[id] = (cart[id] || 0) + delta;
-        const btn = document.getElementById('btn-' + id);
-        const cnt = document.getElementById('cnt-' + id);
-        const num = document.getElementById('num-' + id);
-
+        const btn = document.getElementById('btn-'+id);
+        const cnt = document.getElementById('cnt-'+id);
         if (cart[id] <= 0) {
             delete cart[id];
             btn.style.display = 'block';
@@ -210,7 +229,7 @@
         } else {
             btn.style.display = 'none';
             cnt.style.display = 'flex';
-            num.innerText = cart[id];
+            document.getElementById('num-'+id).innerText = cart[id];
         }
         updateMainButton();
     }
@@ -218,36 +237,26 @@
     function updateMainButton() {
         let total = 0;
         for (const id in cart) {
-            const item = menuItems.find(i => i.id === id);
-            total += item.price * cart[id];
+            total += menuItems.find(i => i.id === id).price * cart[id];
         }
         if (total > 0) {
-            tg.MainButton.text = `ЗАКАЗАТЬ (${total} ₽)`;
+            tg.MainButton.setText(`ЗАКАЗАТЬ (${total} ₽)`);
             tg.MainButton.show();
         } else {
             tg.MainButton.hide();
         }
     }
 
-    tg.onEvent('mainButtonClicked', function() {
+    tg.onEvent('mainButtonClicked', () => {
         let order = [];
         for (const id in cart) {
             const item = menuItems.find(i => i.id === id);
-            order.push({ 
-                title: item.title, 
-                count: cart[id], 
-                price: item.price,
-                iiko_id: item.iiko_id // Передаем ID айки в бот
-            });
+            order.push({ title: item.title, count: cart[id], price: item.price, iiko_id: item.iiko_id });
         }
-        const data = {
-            order: order,
-            time: document.getElementById('order-time').value
-        };
-        tg.sendData(JSON.stringify(data));
+        tg.sendData(JSON.stringify({ order: order, time: document.getElementById('order-time').value }));
     });
 
-    render();
+    init();
 </script>
 </body>
 </html>
