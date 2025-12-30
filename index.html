@@ -19,7 +19,7 @@
             background-color: var(--secondary-bg);
             color: var(--text-color);
             margin: 0; padding: 0;
-            scroll-behavior: smooth; /* Плавная прокрутка */
+            scroll-behavior: smooth;
         }
 
         header {
@@ -29,7 +29,7 @@
             position: sticky; top: 0; z-index: 20;
         }
 
-        /* ПАНЕЛЬ КАТЕГОРИЙ (БЫСТРАЯ НАВИГАЦИЯ) */
+        /* Быстрая навигация по категориям */
         .category-nav {
             display: flex;
             overflow-x: auto;
@@ -37,13 +37,13 @@
             padding: 10px;
             gap: 8px;
             position: sticky;
-            top: 48px; /* Сразу под хедером */
+            top: 48px;
             z-index: 19;
             border-bottom: 1px solid rgba(0,0,0,0.05);
             -webkit-overflow-scrolling: touch;
         }
 
-        .category-nav::-webkit-scrollbar { display: none; } /* Скрываем полосу прокрутки */
+        .category-nav::-webkit-scrollbar { display: none; }
 
         .nav-item {
             white-space: nowrap;
@@ -54,16 +54,11 @@
             font-weight: 600;
             color: var(--text-color);
             text-decoration: none;
-            transition: 0.2s;
         }
 
         .nav-item.active {
             background: var(--button-color);
             color: #fff;
-        }
-
-        .category-section {
-            padding-top: 10px; /* Чтобы заголовок не заезжал под навигацию */
         }
 
         .category-title {
@@ -79,9 +74,10 @@
             margin: 10px;
             padding: 15px;
             border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        .menu-container { padding: 0 10px 10px; }
+        .menu-container { padding: 0 10px 100px; }
 
         .item-card {
             background: var(--bg-color);
@@ -93,7 +89,7 @@
         }
 
         .item-img {
-            width: 80px; height: 80px;
+            width: 85px; height: 85px;
             border-radius: 12px;
             background: #eee;
             margin-right: 12px;
@@ -104,21 +100,23 @@
 
         .item-info { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
         .item-title { font-weight: 700; font-size: 15px; }
-        .item-desc { font-size: 12px; color: var(--hint-color); margin: 4px 0; }
+        .item-desc { font-size: 11px; color: var(--hint-color); margin: 4px 0; line-height: 1.3; }
         .item-footer { display: flex; justify-content: space-between; align-items: center; }
         .item-price { font-weight: 800; color: var(--button-color); }
 
         .add-btn {
             background: var(--button-color);
-            color: #fff;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 15px;
-            font-weight: 600;
+            color: #fff; border: none;
+            padding: 6px 14px; border-radius: 15px;
+            font-weight: 600; font-size: 12px;
         }
 
-        .counter { display: none; align-items: center; gap: 10px; }
-        .counter-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--button-color); background: none; color: var(--button-color); font-weight: bold; }
+        .counter { display: none; align-items: center; gap: 12px; }
+        .counter-btn { 
+            width: 28px; height: 28px; border-radius: 50%; 
+            border: 1px solid var(--button-color); background: none; 
+            color: var(--button-color); font-weight: bold; 
+        }
     </style>
 </head>
 <body>
@@ -131,7 +129,7 @@
 
 <div class="order-options">
     <label style="font-size: 12px; font-weight: bold;">🕒 ПОДАЧА:</label>
-    <select id="order-time" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd; margin-top: 5px;">
+    <select id="order-time" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd; margin-top: 5px; background: var(--bg-color); color: var(--text-color);">
         <option value="🍽 К забронированному столику">К моему бронированию</option>
         <option value="🚀 Как можно скорее">Как можно скорее</option>
     </select>
@@ -144,19 +142,31 @@
     tg.ready();
     tg.expand();
 
+    // Названия категорий
     const categories = {
-        'sets': 'Сеты',
-        'snacks': 'Закуски'
+        'mangal': '🔥 Мангал',
+        'sets': '📦 Сеты',
+        'snacks': '🍺 Закуски'
     };
 
+    // Полный список товаров
+    // ВСТАВЬТЕ ССЫЛКИ НА ФОТО В 'img' И ID В 'iiko_id'
     const menuItems = [
+        // МАНГАЛ
+        { id: 'ribs', iiko_id: '', img: '', title: 'Рёбрышки на мангале', price: 560, category: 'mangal', desc: 'Сочные свиные ребра (200г)' },
+        { id: 'sausages', iiko_id: '', img: '', title: 'Колбаски на углях', price: 570, category: 'mangal', desc: 'Ассорти из 4 видов колбасок (230/30г)' },
+        { id: 'wings', iiko_id: '', img: '', title: 'Куриные крылья', price: 420, category: 'mangal', desc: 'Запеченные крылышки с дымком (200г)' },
+        
+        // СЕТЫ
         { id: 'set1', iiko_id: '', img: '', title: 'Сет 1', price: 1550, category: 'sets', desc: 'Сырные нити, суджук, мясные чипсы, гренки, крылья' },
         { id: 'set2', iiko_id: '', img: '', title: 'Сет 2', price: 790, category: 'sets', desc: 'Креветочные чипсы, шарики, кольца, тар-тар' },
-        { id: 'set3', iiko_id: '', img: '', title: 'Сет 3', price: 1150, category: 'sets', desc: 'Ребра, 4 вида колбасок, гренки, соус BBQ' },
+        { id: 'set3', iiko_id: '', img: '', title: 'Сет 3', price: 1150, category: 'sets', desc: 'Ребра, колбаски, гренки, соус BBQ' },
         { id: 'set4', iiko_id: '', img: '', title: 'Сет 4', price: 850, category: 'sets', desc: 'Нити, чипсы, суджук, арахис, фисташки' },
+        
+        // ЗАКУСКИ
         { id: 'chips', iiko_id: '', img: '', title: 'Чипсы (30г)', price: 130, category: 'snacks' },
         { id: 'shrimp_chips', iiko_id: '', img: '', title: 'Креветочные чипсы', price: 120, category: 'snacks' },
-        { id: 'croutons', iiko_id: '', img: '', title: 'Гренки', price: 180, category: 'snacks' },
+        { id: 'croutons', iiko_id: '', img: '', title: 'Гренки (100/30г)', price: 180, category: 'snacks' },
         { id: 'cheese_threads', iiko_id: '', img: '', title: 'Сырные нити', price: 180, category: 'snacks' },
         { id: 'cheese_balls', iiko_id: '', img: '', title: 'Сырные шарики', price: 230, category: 'snacks' },
         { id: 'meat_chips_pork', iiko_id: '', img: '', title: 'Мясные чипсы (св)', price: 260, category: 'snacks' },
@@ -164,14 +174,11 @@
         { id: 'sudzhuk', iiko_id: '', img: '', title: 'Суджук', price: 360, category: 'snacks' },
         { id: 'peanuts', iiko_id: '', img: '', title: 'Арахис', price: 390, category: 'snacks' },
         { id: 'pistachios', iiko_id: '', img: '', title: 'Фисташки', price: 390, category: 'snacks' },
-        { id: 'wings', iiko_id: '', img: '', title: 'Крылья', price: 420, category: 'snacks' },
-        { id: 'ribs', iiko_id: '', img: '', title: 'Рёбрышки', price: 560, category: 'snacks' },
-        { id: 'sausages', iiko_id: '', img: '', title: 'Колбаски', price: 570, category: 'snacks' },
         { id: 'onion_rings_6', iiko_id: '', img: '', title: 'Луковые кольца (6)', price: 210, category: 'snacks' },
         { id: 'onion_rings_10', iiko_id: '', img: '', title: 'Луковые кольца (10)', price: 310, category: 'snacks' },
         { id: 'squid_rings_6', iiko_id: '', img: '', title: 'Кольца кальмара (6)', price: 360, category: 'snacks' },
         { id: 'squid_rings_10', iiko_id: '', img: '', title: 'Кольца кальмара (10)', price: 540, category: 'snacks' },
-        { id: 'shrimp_snack', iiko_id: '', img: 'https://via.placeholder.com/100', title: 'Креветки', price: 560, category: 'snacks' }
+        { id: 'shrimp_snack', iiko_id: '', img: '', title: 'Креветки (150г)', price: 560, category: 'snacks' }
     ];
 
     let cart = {};
@@ -184,11 +191,10 @@
             // Создаем кнопку навигации
             nav.innerHTML += `<a href="#cat-${id}" class="nav-item" onclick="setActive(this)">${name}</a>`;
             
-            // Создаем секцию меню
             const items = menuItems.filter(i => i.category === id);
             let itemsHtml = items.map(item => `
                 <div class="item-card">
-                    <div class="item-img" style="background-image: url('${item.img || 'https://via.placeholder.com/100'}')"></div>
+                    <div class="item-img" style="background-image: url('${item.img || 'https://via.placeholder.com/100?text=Food'}')"></div>
                     <div class="item-info">
                         <div class="item-title">${item.title}</div>
                         <div class="item-desc">${item.desc || ''}</div>
@@ -197,7 +203,7 @@
                             <button class="add-btn" id="btn-${item.id}" onclick="change('${item.id}', 1)">Добавить</button>
                             <div class="counter" id="cnt-${item.id}">
                                 <button class="counter-btn" onclick="change('${item.id}', -1)">-</button>
-                                <span id="num-${item.id}">0</span>
+                                <span id="num-${item.id}" style="font-weight:bold">0</span>
                                 <button class="counter-btn" onclick="change('${item.id}', 1)">+</button>
                             </div>
                         </div>
@@ -240,7 +246,7 @@
             total += menuItems.find(i => i.id === id).price * cart[id];
         }
         if (total > 0) {
-            tg.MainButton.setText(`ЗАКАЗАТЬ (${total} ₽)`);
+            tg.MainButton.setText(`ОФОРМИТЬ ЗАКАЗ (${total} ₽)`);
             tg.MainButton.show();
         } else {
             tg.MainButton.hide();
@@ -253,7 +259,10 @@
             const item = menuItems.find(i => i.id === id);
             order.push({ title: item.title, count: cart[id], price: item.price, iiko_id: item.iiko_id });
         }
-        tg.sendData(JSON.stringify({ order: order, time: document.getElementById('order-time').value }));
+        tg.sendData(JSON.stringify({ 
+            order: order, 
+            time: document.getElementById('order-time').value 
+        }));
     });
 
     init();
