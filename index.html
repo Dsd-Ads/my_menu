@@ -6,7 +6,6 @@
     <title>Крафт Хаб</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Использование системных цветов Telegram для бесшовного дизайна */
         :root {
             --bg-color: var(--tg-theme-bg-color, #ffffff);
             --secondary-bg: var(--tg-theme-secondary-bg-color, #f4f4f5);
@@ -65,10 +64,7 @@
             color: var(--button-text);
         }
 
-        /* Тот самый отступ, чтобы заголовки не прятались под меню */
-        .section-anchor {
-            scroll-margin-top: 110px;
-        }
+        .section-anchor { scroll-margin-top: 110px; }
 
         .category-header {
             padding: 20px 16px 8px;
@@ -86,28 +82,20 @@
             border-radius: 12px;
         }
         .options-block select {
-            width: 100%;
-            background: none;
-            border: none;
-            color: var(--link-color);
-            font-size: 16px;
-            outline: none;
+            width: 100%; background: none; border: none;
+            color: var(--link-color); font-size: 16px; outline: none;
         }
 
         .item-card {
-            display: flex;
-            padding: 12px 16px;
-            gap: 12px;
+            display: flex; padding: 12px 16px; gap: 12px;
             border-bottom: 0.5px solid rgba(0,0,0,0.05);
             align-items: center;
         }
 
         .item-img {
-            width: 80px; height: 80px;
-            border-radius: 10px;
+            width: 80px; height: 80px; border-radius: 10px;
             background-color: var(--secondary-bg);
-            background-size: cover;
-            background-position: center;
+            background-size: cover; background-position: center;
             flex-shrink: 0;
         }
 
@@ -116,38 +104,27 @@
         .item-desc { font-size: 13px; color: var(--hint-color); line-height: 1.2; }
 
         .item-controls {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 8px;
-            min-width: 80px;
+            display: flex; flex-direction: column;
+            align-items: flex-end; gap: 8px; min-width: 80px;
         }
 
         .price { font-weight: 600; font-size: 15px; }
 
         .add-btn {
             background-color: var(--secondary-bg);
-            color: var(--link-color);
-            border: none;
-            padding: 5px 15px;
-            border-radius: 14px;
-            font-weight: 600;
-            font-size: 14px;
+            color: var(--link-color); border: none;
+            padding: 5px 15px; border-radius: 14px;
+            font-weight: 600; font-size: 14px;
         }
 
         .counter {
-            display: none;
-            align-items: center;
+            display: none; align-items: center;
             background-color: var(--button-color);
-            color: var(--button-text);
-            border-radius: 14px;
-            padding: 3px;
+            color: var(--button-text); border-radius: 14px; padding: 3px;
         }
         .counter button {
-            background: none; border: none;
-            color: var(--button-text);
-            font-size: 18px; font-weight: bold;
-            width: 30px; height: 24px;
+            background: none; border: none; color: var(--button-text);
+            font-size: 18px; font-weight: bold; width: 30px; height: 24px;
         }
         .count-num { width: 20px; text-align: center; font-weight: 600; }
 
@@ -212,7 +189,6 @@
         
         Object.entries(categories).forEach(([id, name]) => {
             nav.innerHTML += `<a href="#cat-${id}" class="nav-btn" onclick="highlightNav(this)">${name}</a>`;
-            
             const items = menuItems.filter(i => i.category === id);
             list.innerHTML += `<div id="cat-${id}" class="section-anchor"><div class="category-header">${name}</div></div>`;
             
@@ -244,34 +220,41 @@
         tg.HapticFeedback.impactOccurred('light');
     }
 
+    // ОБНОВЛЕННАЯ ФУНКЦИЯ КОРЗИНЫ
     function updateCart(id, delta) {
-        cart[id] = (cart[id] || 0) + delta;
-        const addBtn = document.getElementById(`add-${id}`);
-        const counter = document.getElementById(`cnt-${id}`);
-        const num = document.getElementById(`num-${id}`);
+        const itemId = String(id);
+        cart[itemId] = (cart[itemId] || 0) + delta;
 
-        if (cart[id] > 0) {
+        const addBtn = document.getElementById(`add-${itemId}`);
+        const counter = document.getElementById(`cnt-${itemId}`);
+        const num = document.getElementById(`num-${itemId}`);
+
+        if (cart[itemId] > 0) {
             addBtn.style.display = 'none';
             counter.style.display = 'flex';
-            num.innerText = cart[id];
+            num.innerText = cart[itemId];
         } else {
-            delete cart[id];
+            delete cart[itemId];
             addBtn.style.display = 'block';
             counter.style.display = 'none';
         }
         
         tg.HapticFeedback.selectionChanged();
-        updateMainBtn();
+        updateMainBtn(); // Сразу вызываем обновление кнопки
     }
 
+    // ОБНОВЛЕННАЯ ФУНКЦИЯ КНОПКИ
     function updateMainBtn() {
-        let total = 0;
+        let currentTotal = 0;
         for (const id in cart) {
-            const item = menuItems.find(i => i.id === id);
-            if (item) total += item.price * cart[id];
+            const item = menuItems.find(i => String(i.id) === String(id));
+            if (item) {
+                currentTotal += item.price * cart[id];
+            }
         }
-        if (total > 0) {
-            tg.MainButton.setText(`ПОДТВЕРДИТЬ ЗАКАЗ — ${total} ₽`);
+
+        if (currentTotal > 0) {
+            tg.MainButton.setText(`ПОДТВЕРДИТЬ ЗАКАЗ — ${currentTotal} ₽`);
             tg.MainButton.show();
         } else {
             tg.MainButton.hide();
@@ -282,15 +265,12 @@
         let finalTotal = 0;
         const order = [];
 
-        // Пересобираем заказ и считаем итоговую сумму прямо перед отправкой
         for (const id in cart) {
             const count = cart[id];
             const item = menuItems.find(i => String(i.id) === String(id));
             
             if (item && count > 0) {
-                const itemTotal = item.price * count;
-                finalTotal += itemTotal; // Суммируем
-                
+                finalTotal += item.price * count;
                 order.push({
                     title: item.title,
                     count: count,
@@ -299,17 +279,16 @@
             }
         }
 
-        // Формируем объект данных. 
-        // ВАЖНО: имена полейTotalPrice должны совпадать с тем, что ищет Python!
-        const payload = {
+        tg.sendData(JSON.stringify({
             order: order,
             totalPrice: finalTotal,
             time: document.getElementById('order-time').value
-        };
-
-        console.log("Отправка данных:", payload); // Для отладки
-        tg.sendData(JSON.stringify(payload));
+        }));
     });
+
+    render();
+    const firstTab = document.querySelector('.nav-btn');
+    if (firstTab) firstTab.classList.add('active');
 </script>
 </body>
 </html>
