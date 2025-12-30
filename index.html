@@ -105,10 +105,6 @@
     <select id="order-time">
         <option value="🍽 К забронированному столику">К моему бронированию</option>
         <option value="🚀 Как можно скорее">Как можно скорее</option>
-        <option value="18:00">18:00</option>
-        <option value="19:00">19:00</option>
-        <option value="20:00">20:00</option>
-        <option value="21:00">21:00</option>
     </select>
 </div>
 
@@ -120,13 +116,29 @@
     tg.expand();
 
     const menuItems = [
-        { id: 'set_1', title: 'Сет 1', price: 1550, desc: 'Сырные нити, суджук, мясные чипсы, гренки, крылышки' },
-        { id: 'set_2', title: 'Сет 2', price: 790, desc: 'Креветочные чипсы, сырные шарики, луковые кольца, кальмар, тар-тар' },
-        { id: 'set_3', title: 'Сет 3', price: 1150, desc: 'Ребра свинина, 4 вида колбасок, гренки, барбекю' },
-        { id: 'set_4', title: 'Сет 4', price: 850, desc: 'Сырные нити, чипсы, суджук, арахис, фисташки' },
-        { id: 'barabulka', title: 'Барабулька', price: 490, desc: 'Жареная барабулька (порция)' }
-    ];
-
+    { id: 'set1', title: 'Сет 1', price: 1550, category: 'sets' },
+    { id: 'set2', title: 'Сет 2', price: 790, category: 'sets' },
+    { id: 'set3', title: 'Сет 3', price: 1150, category: 'sets' },
+    { id: 'set4', title: 'Сет 4', price: 850, category: 'sets' },
+    { id: 'chips', title: 'Чипсы (30г)', price: 130, category: 'snacks' },
+    { id: 'shrimp_chips', title: 'Креветочные чипсы (20г)', price: 120, category: 'snacks' },
+    { id: 'croutons', title: 'Гренки (100/30г)', price: 180, category: 'snacks' },
+    { id: 'cheese_threads', title: 'Сырные нити (50г)', price: 180, category: 'snacks' },
+    { id: 'cheese_balls', title: 'Сырные шарики (6 шт)', price: 230, category: 'snacks' },
+    { id: 'meat_chips_pork', title: 'Мясные чипсы свинина (50г)', price: 260, category: 'snacks' },
+    { id: 'meat_chips_chicken', title: 'Мясные чипсы курица (50г)', price: 260, category: 'snacks' },
+    { id: 'sudzhuk', title: 'Суджук (50г)', price: 360, category: 'snacks' },
+    { id: 'peanuts', title: 'Арахис (100г)', price: 390, category: 'snacks' },
+    { id: 'pistachios', title: 'Фисташки (100г)', price: 390, category: 'snacks' },
+    { id: 'wings', title: 'Куриные крылья (200г)', price: 420, category: 'snacks' },
+    { id: 'ribs', title: 'Рёбрышки (200г)', price: 560, category: 'snacks' },
+    { id: 'sausages', title: 'Колбаски (230/30г)', price: 570, category: 'snacks' },
+    { id: 'onion_rings_6', title: 'Луковые кольца (6 шт)', price: 210, category: 'snacks' },
+    { id: 'onion_rings_10', title: 'Луковые кольца (10 шт)', price: 310, category: 'snacks' },
+    { id: 'squid_rings_6', title: 'Кольца кальмара (6 шт)', price: 360, category: 'snacks' },
+    { id: 'squid_rings_10', title: 'Кольца кальмара (10 шт)', price: 540, category: 'snacks' },
+    { id: 'shrimp_snack', title: 'Креветки (150г)', price: 560, category: 'snacks' }
+];
     let cart = {};
 
     function render() {
