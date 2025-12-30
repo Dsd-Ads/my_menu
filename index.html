@@ -289,16 +289,33 @@
         }
     }
 
-    tg.onEvent('mainButtonClicked', () => {
+   tg.onEvent('mainButtonClicked', () => {
+        let total = 0; // Переменная для хранения итоговой суммы
+        
         const order = Object.entries(cart).map(([id, count]) => {
             const item = menuItems.find(i => i.id === id);
-            return { title: item.title, count: count, price: item.price };
+            if (item) {
+                total += item.price * count; // Считаем сумму каждой позиции
+                return { 
+                    title: item.title, 
+                    count: count, 
+                    price: item.price 
+                };
+            }
         });
-        tg.sendData(JSON.stringify({ order, time: document.getElementById('order-time').value }));
+
+        // Отправляем объект, в котором теперь точно есть totalPrice
+        tg.sendData(JSON.stringify({ 
+            order: order, 
+            totalPrice: total, // Теперь бот увидит эту сумму
+            time: document.getElementById('order-time').value 
+        }));
     });
 
     render();
-    document.querySelector('.nav-btn').classList.add('active');
+    // Активируем первый таб при загрузке
+    const firstTab = document.querySelector('.nav-btn');
+    if (firstTab) firstTab.classList.add('active');
 </script>
 </body>
 </html>
