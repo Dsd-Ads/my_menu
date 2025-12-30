@@ -29,6 +29,15 @@
             position: sticky; top: 0; z-index: 10;
         }
 
+        .category-title {
+            padding: 20px 15px 10px;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--button-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
         .order-options {
             background: var(--bg-color);
             margin: 10px;
@@ -72,6 +81,7 @@
             margin-right: 12px;
             background-size: cover;
             background-position: center;
+            flex-shrink: 0;
         }
 
         .item-info { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
@@ -84,14 +94,15 @@
             background: var(--button-color);
             color: #fff;
             border: none;
-            padding: 6px 12px;
+            padding: 6px 16px;
             border-radius: 15px;
             font-weight: 600;
             font-size: 13px;
         }
 
         .counter { display: none; align-items: center; gap: 10px; }
-        .counter-btn { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--button-color); background: none; color: var(--button-color); font-weight: bold; }
+        .counter-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--button-color); background: none; color: var(--button-color); font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: center; padding: 0; }
+        .num-display { font-weight: bold; min-width: 20px; text-align: center; }
     </style>
 </head>
 <body>
@@ -108,71 +119,98 @@
     </select>
 </div>
 
-<div class="menu-container" id="menu-list"></div>
+<div id="menu-content">
+    </div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
 
+    // Категории для отображения
+    const categories = {
+        'sets': '🔥 Популярные сеты',
+        'snacks': '🍺 Закуски к крафту'
+    };
+
+    // Данные меню
+    // Вставьте свои ссылки в поле 'img' и ID из iiko в 'iiko_id'
     const menuItems = [
-    { id: 'set1', title: 'Сет 1', price: 1550, category: 'sets' },
-    { id: 'set2', title: 'Сет 2', price: 790, category: 'sets' },
-    { id: 'set3', title: 'Сет 3', price: 1150, category: 'sets' },
-    { id: 'set4', title: 'Сет 4', price: 850, category: 'sets' },
-    { id: 'chips', title: 'Чипсы (30г)', price: 130, category: 'snacks' },
-    { id: 'shrimp_chips', title: 'Креветочные чипсы (20г)', price: 120, category: 'snacks' },
-    { id: 'croutons', title: 'Гренки (100/30г)', price: 180, category: 'snacks' },
-    { id: 'cheese_threads', title: 'Сырные нити (50г)', price: 180, category: 'snacks' },
-    { id: 'cheese_balls', title: 'Сырные шарики (6 шт)', price: 230, category: 'snacks' },
-    { id: 'meat_chips_pork', title: 'Мясные чипсы свинина (50г)', price: 260, category: 'snacks' },
-    { id: 'meat_chips_chicken', title: 'Мясные чипсы курица (50г)', price: 260, category: 'snacks' },
-    { id: 'sudzhuk', title: 'Суджук (50г)', price: 360, category: 'snacks' },
-    { id: 'peanuts', title: 'Арахис (100г)', price: 390, category: 'snacks' },
-    { id: 'pistachios', title: 'Фисташки (100г)', price: 390, category: 'snacks' },
-    { id: 'wings', title: 'Куриные крылья (200г)', price: 420, category: 'snacks' },
-    { id: 'ribs', title: 'Рёбрышки (200г)', price: 560, category: 'snacks' },
-    { id: 'sausages', title: 'Колбаски (230/30г)', price: 570, category: 'snacks' },
-    { id: 'onion_rings_6', title: 'Луковые кольца (6 шт)', price: 210, category: 'snacks' },
-    { id: 'onion_rings_10', title: 'Луковые кольца (10 шт)', price: 310, category: 'snacks' },
-    { id: 'squid_rings_6', title: 'Кольца кальмара (6 шт)', price: 360, category: 'snacks' },
-    { id: 'squid_rings_10', title: 'Кольца кальмара (10 шт)', price: 540, category: 'snacks' },
-    { id: 'shrimp_snack', title: 'Креветки (150г)', price: 560, category: 'snacks' }
-];
+        { id: 'set1', iiko_id: '', img: '', title: 'Сет 1', price: 1550, category: 'sets', desc: 'Сырные нити, суджук, мясные чипсы, гренки, крылья' },
+        { id: 'set2', iiko_id: '', img: '', title: 'Сет 2', price: 790, category: 'sets', desc: 'Креветочные чипсы, сырные шарики, луковые кольца, кальмар, тар-тар' },
+        { id: 'set3', iiko_id: '', img: '', title: 'Сет 3', price: 1150, category: 'sets', desc: 'Ребра свинина, 4 вида колбасок, гренки, соус BBQ' },
+        { id: 'set4', iiko_id: '', img: '', title: 'Сет 4', price: 850, category: 'sets', desc: 'Сырные нити, чипсы, суджук, арахис, фисташки' },
+        { id: 'chips', iiko_id: '', img: '', title: 'Чипсы (30г)', price: 130, category: 'snacks', desc: '' },
+        { id: 'shrimp_chips', iiko_id: '', img: '', title: 'Креветочные чипсы (20г)', price: 120, category: 'snacks', desc: '' },
+        { id: 'croutons', iiko_id: '', img: '', title: 'Гренки (100/30г)', price: 180, category: 'snacks', desc: '' },
+        { id: 'cheese_threads', iiko_id: '', img: '', title: 'Сырные нити (50г)', price: 180, category: 'snacks', desc: '' },
+        { id: 'cheese_balls', iiko_id: '', img: '', title: 'Сырные шарики (6 шт)', price: 230, category: 'snacks', desc: '' },
+        { id: 'meat_chips_pork', iiko_id: '', img: '', title: 'Мясные чипсы свинина (50г)', price: 260, category: 'snacks', desc: '' },
+        { id: 'meat_chips_chicken', iiko_id: '', img: '', title: 'Мясные чипсы курица (50г)', price: 260, category: 'snacks', desc: '' },
+        { id: 'sudzhuk', iiko_id: '', img: '', title: 'Суджук (50г)', price: 360, category: 'snacks', desc: '' },
+        { id: 'peanuts', iiko_id: '', img: '', title: 'Арахис (100г)', price: 390, category: 'snacks', desc: '' },
+        { id: 'pistachios', iiko_id: '', img: '', title: 'Фисташки (100г)', price: 390, category: 'snacks', desc: '' },
+        { id: 'wings', iiko_id: '', img: '', title: 'Куриные крылья (200г)', price: 420, category: 'snacks', desc: '' },
+        { id: 'ribs', iiko_id: '', img: '', title: 'Рёбрышки (200г)', price: 560, category: 'snacks', desc: '' },
+        { id: 'sausages', iiko_id: '', img: '', title: 'Колбаски (230/30г)', price: 570, category: 'snacks', desc: '' },
+        { id: 'onion_rings_6', iiko_id: '', img: '', title: 'Луковые кольца (6 шт)', price: 210, category: 'snacks', desc: '' },
+        { id: 'onion_rings_10', iiko_id: '', img: '', title: 'Луковые кольца (10 шт)', price: 310, category: 'snacks', desc: '' },
+        { id: 'squid_rings_6', iiko_id: '', img: '', title: 'Кольца кальмара (6 шт)', price: 360, category: 'snacks', desc: '' },
+        { id: 'squid_rings_10', iiko_id: '', img: '', title: 'Кольца кальмара (10 шт)', price: 540, category: 'snacks', desc: '' },
+        { id: 'shrimp_snack', iiko_id: '', img: '', title: 'Креветки (150г)', price: 560, category: 'snacks', desc: '' }
+    ];
+
     let cart = {};
 
     function render() {
-        const list = document.getElementById('menu-list');
-        list.innerHTML = menuItems.map(item => `
-            <div class="item-card">
-                <div class="item-img" style="background-image: url('https://via.placeholder.com/100?text=Food')"></div>
-                <div class="item-info">
-                    <div class="item-title">${item.title}</div>
-                    <div class="item-desc">${item.desc}</div>
-                    <div class="item-footer">
-                        <div class="item-price">${item.price} ₽</div>
-                        <button class="add-btn" id="btn-${item.id}" onclick="change('${item.id}', 1)">Добавить</button>
-                        <div class="counter" id="cnt-${item.id}">
-                            <button class="counter-btn" onclick="change('${item.id}', -1)">-</button>
-                            <span id="num-${item.id}">0</span>
-                            <button class="counter-btn" onclick="change('${item.id}', 1)">+</button>
+        const content = document.getElementById('menu-content');
+        content.innerHTML = '';
+
+        for (const [catId, catName] of Object.entries(categories)) {
+            const items = menuItems.filter(i => i.category === catId);
+            if (items.length === 0) continue;
+
+            content.innerHTML += `<div class="category-title">${catName}</div><div class="menu-container">`;
+            
+            items.forEach(item => {
+                const imgUrl = item.img || 'https://via.placeholder.com/100?text=Food';
+                content.innerHTML += `
+                    <div class="item-card">
+                        <div class="item-img" style="background-image: url('${imgUrl}')"></div>
+                        <div class="item-info">
+                            <div class="item-title">${item.title}</div>
+                            <div class="item-desc">${item.desc || ''}</div>
+                            <div class="item-footer">
+                                <div class="item-price">${item.price} ₽</div>
+                                <button class="add-btn" id="btn-${item.id}" onclick="change('${item.id}', 1)">Добавить</button>
+                                <div class="counter" id="cnt-${item.id}">
+                                    <button class="counter-btn" onclick="change('${item.id}', -1)">-</button>
+                                    <span class="num-display" id="num-${item.id}">0</span>
+                                    <button class="counter-btn" onclick="change('${item.id}', 1)">+</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        `).join('');
+                `;
+            });
+            content.innerHTML += `</div>`;
+        }
     }
 
     function change(id, delta) {
         cart[id] = (cart[id] || 0) + delta;
+        const btn = document.getElementById('btn-' + id);
+        const cnt = document.getElementById('cnt-' + id);
+        const num = document.getElementById('num-' + id);
+
         if (cart[id] <= 0) {
             delete cart[id];
-            document.getElementById('btn-'+id).style.display = 'block';
-            document.getElementById('cnt-'+id).style.display = 'none';
+            btn.style.display = 'block';
+            cnt.style.display = 'none';
         } else {
-            document.getElementById('btn-'+id).style.display = 'none';
-            document.getElementById('cnt-'+id).style.display = 'flex';
-            document.getElementById('num-'+id).innerText = cart[id];
+            btn.style.display = 'none';
+            cnt.style.display = 'flex';
+            num.innerText = cart[id];
         }
         updateMainButton();
     }
@@ -193,15 +231,17 @@
 
     tg.onEvent('mainButtonClicked', function() {
         let order = [];
-        let total = 0;
         for (const id in cart) {
             const item = menuItems.find(i => i.id === id);
-            order.push({ title: item.title, count: cart[id], price: item.price * cart[id] });
-            total += item.price * cart[id];
+            order.push({ 
+                title: item.title, 
+                count: cart[id], 
+                price: item.price,
+                iiko_id: item.iiko_id // Передаем ID айки в бот
+            });
         }
         const data = {
             order: order,
-            totalPrice: total,
             time: document.getElementById('order-time').value
         };
         tg.sendData(JSON.stringify(data));
