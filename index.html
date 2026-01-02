@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Крафт Хаб</title>
+    <title>Крафт Хаб — Меню</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -121,18 +121,12 @@
 <script>
     const tg = window.Telegram.WebApp;
     
-    // Инициализация при загрузке
-    document.addEventListener('DOMContentLoaded', () => {
-        tg.ready();
-        tg.expand();
-        render();
-        
-        // Установка параметров кнопки один раз
-        tg.MainButton.setParams({
-            color: tg.themeParams.button_color || '#248bed',
-            text_color: tg.themeParams.button_text_color || '#ffffff'
-        });
-    });
+    // Инициализация
+    tg.ready();
+    tg.expand();
+    
+    // Начальное скрытие кнопки
+    tg.MainButton.hide();
 
     const categories = {
         'mangal': '🔥 Мангал',
@@ -193,8 +187,9 @@
                     </div>`;
             });
         });
-        const firstTab = document.querySelector('.nav-btn');
-        if (firstTab) firstTab.classList.add('active');
+        if (document.querySelector('.nav-btn')) {
+            document.querySelector('.nav-btn').classList.add('active');
+        }
     }
 
     function highlightNav(el) {
@@ -242,46 +237,59 @@
             tg.MainButton.setParams({
                 text: `ПОДТВЕРДИТЬ ЗАКАЗ — ${total} ₽`,
                 is_visible: true,
-                is_active: true // Важно для iPhone
+                is_active: true,
+                color: tg.themeParams.button_color || '#248bed'
             });
         } else {
             tg.MainButton.hide();
         }
     }
 
-    // Использование анонимной функции для надежности события
-    tg.onEvent('mainButtonClicked', function() {
-        try {
-            let finalTotal = 0;
-            const order = [];
+    // Обработчик нажатия (Универсальный)
+    function onConfirm() {
+        tg.MainButton.showProgress(); // Показываем лоадер (важно для iOS)
 
-            for (const id in cart) {
-                const count = cart[id];
-                const item = menuItems.find(i => String(i.id) === String(id));
-                if (item && count > 0) {
-                    finalTotal += item.price * count;
-                    order.push({
-                        title: item.title,
-                        count: count,
-                        price: item.price
-                    });
-                }
+        const order = [];
+        let finalTotal = 0;
+
+        for (const id in cart) {
+            const count = cart[id];
+            const item = menuItems.find(i => String(i.id) === String(id));
+            if (item && count > 0) {
+                finalTotal += item.price * count;
+                order.push({
+                    title: item.title,
+                    count: count,
+                    price: item.price
+                });
             }
-
-            if (order.length === 0) return;
-
-            const result = JSON.stringify({
-                order: order,
-                totalPrice: finalTotal,
-                time: document.getElementById('order-time').value
-            });
-
-            tg.sendData(result);
-        } catch (e) {
-            alert("Ошибка при отправке: " + e); // Только для теста на iPhone
         }
-    });
 
+        if (order.length === 0) {
+            tg.MainButton.hideProgress();
+            return;
+        }
+
+        const payload = JSON.stringify({
+            order: order,
+            totalPrice: finalTotal,
+            time: document.getElementById('order-time').value
+        });
+
+        tg.sendData(payload);
+        
+        // Задержка закрытия для стабильности на iOS
+        setTimeout(() => {
+            tg.close();
+        }, 200);
+    }
+
+    // Регистрация события
+    tg.onEvent('mainButtonClicked', onConfirm);
+
+    // Первичный рендер
+    render();
 </script>
+
 </body>
 </html>
